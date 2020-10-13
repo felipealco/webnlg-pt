@@ -22,8 +22,7 @@ def LCTokenSequence(strings):
   
   if a == b == []:
     return ''
-  
-  # LCS algorithm  
+   
   table = np.zeros(shape=(len(a) + 1, len(b) + 1), dtype=int)
 
   for i in range(1, len(a) + 1):
@@ -35,23 +34,37 @@ def LCTokenSequence(strings):
   
   x = table[i][j]
   
-  # slicing LCS and leftovers
   left = [a[0:i-x], b[0:j-x]]
   common = [a[i-x:i], b[j-x:j]]
   right = [a[i:], b[j:]]
   
-  if left == common: # no common substring found
-    return ' [' + md.detokenize(right[0]) + '|' + md.detokenize(right[1]) + '] '
+  if left == common:
+    temp = '[' + ''.join(right[0]) + '|' + ''.join(right[1]) + ']'
+    
+    # removing spaces from begining and end of editions
+    if len(right[0]) > 1 and right[0][0] == ' ':
+      temp = ' [' + ''.join(right[0][1:]) + '|' + ''.join(right[1]) + ']'
+
+    if len(right[1]) > 1 and right[1][0] == ' ':
+      temp = ' [' + ''.join(right[0]) + '|' + ''.join(right[1][1:]) + ']'
+    
+    if len(right[0]) > 1 and right[0][-1] == ' ':
+      temp = '[' + ''.join(right[0][:-1]) + '|' + ''.join(right[1]) + '] '
+    
+    if len(right[1]) > 1 and right[1][-1] == ' ':
+      temp = '[' + ''.join(right[0]) + '|' + ''.join(right[1][:-1]) + '] '
+    
+    return temp
   else:
-    return LCTokenSequence(left) + md.detokenize(common[0]) + LCTokenSequence(right)
+    return LCTokenSequence(left) + ''.join(common[0]) + LCTokenSequence(right)
   
-# database connection
 
 mydb = mysql.connector.connect(
   host="",
   user="",
   passwd="",
-  database=""
+  database="",
+  charset='utf8'
 )
 
 mycursor = mydb.cursor()
@@ -70,9 +83,12 @@ for x in myresult:
   postedition, machine = x
   
   postedition = html.unescape(postedition)
-  postedition = mt.tokenize(postedition, escape=False)
+  postedition = md.detokenize(postedition.split(' '))
+  postedition = mt.tokenize(postedition, escape=False, return_str=True)
+  postedition = list(postedition)
   
   machine = html.unescape(machine)
-  machine = mt.tokenize(machine, escape=False)
+  machine = mt.tokenize(machine, escape=False, return_str=True)
+  machine = list(machine)
   
   print(LCTokenSequence([machine, postedition]))
