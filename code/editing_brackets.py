@@ -5,6 +5,9 @@
   Generating Editing Bracktes from two strings on token level
   Author: Felipe Costa
   
+  For ranking the editing bracktes we used the following command:
+  python3 editing_brackets.py | grep -oP "\[.*?\]" | sort | uniq -c | sort -rn | head
+  
 '''
 
 import html
